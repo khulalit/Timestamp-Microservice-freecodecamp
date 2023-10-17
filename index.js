@@ -45,14 +45,19 @@ app.get("/api/:date?", function(req, res) {
       // If the input is a valid Unix timestamp, convert to Date and return the response
       const unixTimestamp = parseInt(inputDate);
       const unixDate = new Date(unixTimestamp);
+      let utc = unixDate.toUTCString();
+      if(utc === "Invalid Date")
+        res.json(
+          { error: "Invalid Date" });
+      else {
       res.json({
         unix: unixDate.getTime(),
         utc: unixDate.toUTCString()
-      });
+      })};
     }
   else {
     // If the date format is invalid, return an error response
-    res.json({ error: 'Invalid Date Format' });
+    res.json({ error : "Invalid Date" });
   }
 });
 
