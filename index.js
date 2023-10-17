@@ -18,48 +18,35 @@ app.get("/", function(req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
 
-app.get("/api/:date?", function(req, res) {
-  let inputDate = req.params.date;
-
-  // If the date parameter is empty, use the current time
-  if (!inputDate) {
-    inputDate = new Date();
+const isInvalidDate = (date) => date.toUTCString() === 'Invalid Date';
+app.get("/api/:date", function(req, res) {
+  let date = new Date(req.params.date);
+  
+  if(isInvalidDate(date)){
+    date = new Date(+req.params.date);
+  }
+  
+  if(isInvalidDate(date)){
     res.json({
-      unix: inputDate.getTime(),
-      utc: inputDate.toUTCString()
+      error: "Invalid Date"
     });
     return;
   }
 
-  // Validate the date format (MM-DD-YYYY)
-  const dateFormatRegex = /^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])-\d{4}$/;
+  res.json({
+    unix: date.getTime(),
+    utc: date.toUTCString(),
+  })
 
-  if (dateFormatRegex.test(inputDate) ) {
-    // If the date is in the valid format, parse and return the response
-    const parsedDate = new Date(inputDate);
-    res.json({
-      unix: parsedDate.getTime(),
-      utc: parsedDate.toUTCString()
-    });
-  } else if (!isNaN(inputDate)) {
-      // If the input is a valid Unix timestamp, convert to Date and return the response
-      const unixTimestamp = parseInt(inputDate);
-      const unixDate = new Date(unixTimestamp);
-      let utc = unixDate.toUTCString();
-      if(utc === "Invalid Date")
-        res.json(
-          { error: "Invalid Date" });
-      else {
-      res.json({
-        unix: unixDate.getTime(),
-        utc: unixDate.toUTCString()
-      })};
-    }
-  else {
-    // If the date format is invalid, return an error response
-    res.json({ error : "Invalid Date" });
-  }
+  
 });
+
+app.get("/api", (req, res)=>{
+  res.json({
+    unix: Date.now(),
+    utc: new Date().toUTCString()
+  });
+})
 
 
 
